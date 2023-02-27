@@ -76,7 +76,7 @@ export default function Home() {
   };
   return (
     <div className={styles.container}>
-      <Container>
+      <Container maxWidth="lg">
         <Card
           sx={{
             width: { xs: "100%", md: "75%" },
@@ -109,7 +109,7 @@ export default function Home() {
               </FormControl>
             </Box>
 
-            <Box sx={{ p: 5 }}>
+            <Box>
               {showCalendar && (
                 <>
                   <Typography
@@ -124,7 +124,7 @@ export default function Home() {
                   >
                     Select Date
                   </Typography>
-                  <Box sx={{ display: "flex" }}>
+                  <Box sx={{ display: { md: "flex", sm: "inline" } }}>
                     <Box sx={{ border: "1px solid black", width: "320px" }}>
                       <DayPicker
                         mode="single"
@@ -199,13 +199,13 @@ export default function Home() {
                       <OutlinedInput
                         placeholder="Additional Details"
                         sx={{
-                          width: "716px",
                           height: "170px",
                           color: "black",
                           background: " #FFFFFF",
                           border: " 1px solid rgba(0, 0, 0, 0.2)",
                           borderRadius: "16px",
                           my: 10,
+                          width: { md: "750px", sm: "440px" },
                         }}
                       />
                     </FormControl>
