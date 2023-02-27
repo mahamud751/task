@@ -1,38 +1,50 @@
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
-import CardActions from "@mui/material/CardActions";
 import CardContent from "@mui/material/CardContent";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import styles from "../styles/Home.module.css";
 import { Container } from "@mui/system";
 import { useState, useEffect } from "react";
-import { FormControl, OutlinedInput } from "@mui/material";
-import { DayPicker } from "react-day-picker";
-import { format, addMinutes, startOfDay } from "date-fns";
-import Paper from "@mui/material/Paper";
+import { FormControl, Modal, OutlinedInput } from "@mui/material";
+
 import Grid from "@mui/material/Unstable_Grid2";
-import { experimentalStyled as styled } from "@mui/material/styles";
-const Item = styled(Paper)(({ theme }) => ({
-  backgroundColor: theme.palette.mode === "dark" ? "#1A2027" : "#fff",
-  ...theme.typography.body2,
-  padding: theme.spacing(2),
+import {
+  format,
+  addMinutes,
+  startOfDay,
+  endOfDay,
+  differenceInMinutes,
+} from "date-fns";
+import { DayPicker } from "react-day-picker";
+import Image from "next/image";
+import Time from "../components/home/time";
+const style = {
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  width: 400,
+  bgcolor: "background.paper",
+  boxShadow: 24,
+  p: 4,
   textAlign: "center",
-  color: theme.palette.text.secondary,
-}));
+  border: "none",
+  borderRadius: 5,
+};
+const jsonData = {
+  schedule: [
+    { start: "08:00", end: "12:00" },
+    { start: "13:00", end: "17:00" },
+    { start: "18:00", end: "22:00" },
+  ],
+};
 
 export default function Home() {
-  const [time, setTime] = useState(new Date());
+  const [open, setOpen] = useState(false);
+  const handleClose = () => setOpen(false);
   const [showCalendar, setShowCalendar] = useState(false);
-  const [selectedTime, setSelectedTime] = useState("");
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setTime(new Date());
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
-  const hours = time.getHours().toString().padStart(2, "0");
-  const minutes = time.getMinutes().toString().padStart(2, "0");
+
   const handleEnter = (e) => {
     if (e.key === "Enter") {
       setShowCalendar(true);
@@ -40,21 +52,52 @@ export default function Home() {
   };
 
   const [selectedDate, setSelectedDate] = useState(new Date());
+  let footer = <p>Please pick a day.</p>;
+  if (selectedDate) {
+    footer = <p>Date:{format(selectedDate, "PP")},</p>;
+  }
+  const [selectedDay, setSelectedDay] = useState(new Date());
+  const [selectedSlot, setSelectedSlot] = useState(null);
+  const [duration, setDuration] = useState(0);
 
-  const handleTimeSelection = (time) => {
-    setSelectedTime(time);
+  const slots = [];
+  const slotDuration = duration;
+  const slotInterval = 2;
+
+  jsonData.schedule.forEach((slot) => {
+    const start = new Date(
+      `${format(selectedDay, "yyyy-MM-dd")}T${slot.start}:00`
+    );
+    const end = new Date(`${format(selectedDay, "yyyy-MM-dd")}T${slot.end}:00`);
+
+    let current = startOfDay(start);
+    const endOfDayDate = endOfDay(start);
+    while (current <= endOfDayDate) {
+      const slotEnd = addMinutes(current, slotDuration);
+      if (
+        slotEnd <= end &&
+        differenceInMinutes(slotEnd, current) >= slotInterval
+      ) {
+        slots.push({
+          start: current,
+          end: slotEnd,
+        });
+      }
+      current = addMinutes(current, slotInterval);
+    }
+  });
+
+  const handleSlotClick = (slot) => {
+    setSelectedSlot(slot);
   };
 
-  const timeSlots = [
-    { start: "9:00 AM", end: "10:00 AM" },
-    { start: "10:00 AM", end: "11:00 AM" },
-    { start: "11:00 AM", end: "12:00 PM" },
-    { start: "12:00 PM", end: "1:00 PM" },
-    { start: "1:00 PM", end: "2:00 PM" },
-    { start: "2:00 PM", end: "3:00 PM" },
-    { start: "3:00 PM", end: "4:00 PM" },
-    { start: "4:00 PM", end: "5:00 PM" },
-  ];
+  const handleDurationChange = (e) => {
+    setDuration(parseInt(e.target.value));
+  };
+
+  const handleBookNowClick = () => {
+    setOpen(true);
+  };
 
   return (
     <div className={styles.container}>
@@ -66,25 +109,7 @@ export default function Home() {
           }}
         >
           <CardContent>
-            <Typography
-              sx={{
-                fontSize: 14,
-                fontFamily: "DM Sans",
-                fontStyle: "normal",
-                fontWeight: "700",
-                fontSize: "30px",
-                lineHeight: "42px",
-                textAlign: "center",
-
-                color: "#000000",
-              }}
-              color="text.secondary"
-              gutterBottom
-
-              /* identical to box height, or 140% */
-            >
-              Time Now: {`${hours}:${minutes}`}
-            </Typography>
+            <Time />
             <Box sx={{ display: "flex", justifyContent: "center" }}>
               <Typography
                 sx={{
@@ -101,32 +126,38 @@ export default function Home() {
                 Enter Meeting Duration(min)
               </Typography>
               <FormControl sx={{ width: "10ch", marginLeft: 3 }}>
-                <OutlinedInput type="number" onKeyPress={handleEnter} />
+                <OutlinedInput
+                  type="number"
+                  onKeyPress={handleEnter}
+                  min="1"
+                  value={duration}
+                  onChange={handleDurationChange}
+                />
               </FormControl>
             </Box>
 
             <Box sx={{ p: 5 }}>
-              <Typography
-                sx={{
-                  fontFamily: "DM Sans",
-                  fontStyle: "normal",
-                  fontWeight: "400",
-                  fontSize: "25px",
-                  lineHeight: " 42px",
-                  /* or 168% */
-
-                  color: "#000000",
-                }}
-              >
-                Select Date
-              </Typography>
-
               {showCalendar && (
                 <>
+                  <Typography
+                    sx={{
+                      fontFamily: "DM Sans",
+                      fontStyle: "normal",
+                      fontWeight: "400",
+                      fontSize: "25px",
+                      lineHeight: " 42px",
+                      /* or 168% */
+
+                      color: "#000000",
+                    }}
+                  >
+                    Select Date
+                  </Typography>
                   <Box sx={{ display: "flex" }}>
                     <Box sx={{ border: "1px solid black", width: "320px" }}>
                       <DayPicker
                         mode="single"
+                        disabledDays={{ before: new Date() }}
                         selected={selectedDate}
                         onSelect={setSelectedDate}
                       />
@@ -151,11 +182,15 @@ export default function Home() {
                         spacing={{ xs: 2, md: 3 }}
                         columns={{ xs: 4, sm: 8, md: 12 }}
                       >
-                        {timeSlots.map((slot, index) => (
+                        {slots.map((slot, index) => (
                           <Grid xs={2} sm={4} md={4} key={index}>
                             {" "}
                             <button
-                              key={slot.start}
+                              key={slot.start.toISOString()}
+                              onClick={() => handleSlotClick(slot)}
+                              className={
+                                selectedSlot === slot ? "selected" : ""
+                              }
                               style={{
                                 width: "105px",
                                 height: "40px",
@@ -166,7 +201,7 @@ export default function Home() {
                                 color: "black",
                               }}
                             >
-                              {slot.start}
+                              {format(slot.start, "h:mm a")}
                             </button>
                           </Grid>
                         ))}
@@ -204,19 +239,75 @@ export default function Home() {
                       float: "right",
                       mb: 10,
                     }}
-                    onClick={() => handleTimeSelection(slot)}
+                    onClick={handleBookNowClick}
+                    disabled={!selectedSlot}
                   >
                     Book now
                   </Button>
                 </>
               )}
-              {selectedTime && (
-                <div>
-                  <p>
-                    You have selected: {selectedTime.start} - {selectedTime.end}
-                  </p>
-                  <button>Book Now</button>
-                </div>
+              <div>
+                {/* <Button onClick={handleOpen}>Open modal</Button> */}
+              </div>
+              {open && (
+                <Modal
+                  open={open}
+                  onClose={handleClose}
+                  aria-labelledby="modal-modal-title"
+                  aria-describedby="modal-modal-description"
+                >
+                  <Box sx={style}>
+                    <Image
+                      src={"/assets/img/Vector (2).png"}
+                      alt="vector"
+                      width={100}
+                      height={100}
+                    />
+                    <Typography
+                      id="modal-modal-title"
+                      variant="h6"
+                      component="h2"
+                      sx={{
+                        fontFamily: "ABeeZee",
+                        fontStyle: "italic",
+                        fontWeight: "400",
+                        fontSize: "40px",
+                        lineHeight: "48px",
+                        /* identical to box height, or 120% */
+
+                        color: "#000000",
+                      }}
+                    >
+                      Great
+                    </Typography>
+                    <Typography
+                      id="modal-modal-title"
+                      variant="subtitle2"
+                      component="h2"
+                    >
+                      Your Booked Time
+                    </Typography>
+                    <Box sx={{ display: "flex", justifyContent: "center" }}>
+                      <Typography
+                        id="modal-modal-title"
+                        variant="subtitle2"
+                        component="h2"
+                      >
+                        {footer}
+                      </Typography>
+                      <Typography
+                        id="modal-modal-title"
+                        variant="subtitle2"
+                        component="h2"
+                        sx={{
+                          mt: 1.7,
+                        }}
+                      >
+                        Time:{format(selectedSlot.start, "h:mm a")}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </Modal>
               )}
             </Box>
           </CardContent>
