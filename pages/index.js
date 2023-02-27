@@ -9,10 +9,10 @@ import { useState } from "react";
 import { FormControl, Modal, OutlinedInput } from "@mui/material";
 import Grid from "@mui/material/Unstable_Grid2";
 import { format, addMinutes } from "date-fns";
-import { DayPicker } from "react-day-picker";
 import Image from "next/image";
 import Time from "../components/home/time";
-
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 const style = {
   position: "absolute",
   top: "50%",
@@ -27,7 +27,24 @@ const style = {
   borderRadius: 5,
 };
 const jsonData = {
-  schedule: [{ start: "06:00", end: "14:00" }],
+  schedule: [
+    {
+      start: "2023-02-26T02:00:00.020Z",
+      end: "2023-02-26T13:00:00.020Z",
+    },
+    {
+      start: "2023-02-27T05:00:00.020Z",
+      end: "2023-02-27T16:00:00.020Z",
+    },
+    {
+      start: "2023-02-28T02:00:00.020Z",
+      end: "2023-02-28T09:00:00.020Z",
+    },
+    {
+      start: "2023-03-02T02:00:00.020Z",
+      end: "2023-03-02T09:00:00.020Z",
+    },
+  ],
 };
 
 export default function Home() {
@@ -42,6 +59,14 @@ export default function Home() {
   };
 
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const handleDateChange = (date) => {
+    setSelectedDate(date);
+  };
+
+  const today = new Date();
+  const disabledBefore = {
+    startDate: today,
+  };
   let footer = <p>Please pick a day.</p>;
   if (selectedDate) {
     footer = <p>Date:{format(selectedDate, "PP")},</p>;
@@ -64,16 +89,20 @@ export default function Home() {
 
   const getTimeSlots = (start, end, duration) => {
     const timeSlots = [];
-    let currentTime = new Date(`2000-01-01T${start}:00.000Z`);
-    while (currentTime < new Date(`2000-01-01T${end}:00.000Z`)) {
+
+    let currentTime = new Date(start);
+
+    while (currentTime < new Date(end)) {
       timeSlots.push({
         start: format(currentTime, "HH:mm"),
         end: format(addMinutes(currentTime, duration), "HH:mm"),
       });
       currentTime = addMinutes(currentTime, duration);
     }
+
     return timeSlots;
   };
+
   return (
     <div className={styles.container}>
       <Container maxWidth="lg">
@@ -125,10 +154,23 @@ export default function Home() {
                     Select Date
                   </Typography>
                   <Box sx={{ display: { md: "flex", sm: "inline" } }}>
-                    <Box sx={{ border: "1px solid black", width: "320px" }}>
-                      <DayPicker
+                    <Box
+                      sx={{
+                        width: "320px",
+                        height: "fit-content",
+                      }}
+                    >
+                      <DatePicker
+                        selected={selectedDate}
+                        onChange={handleDateChange}
+                        minDate={today}
+                        disabled={false}
+                        excludeDates={[disabledBefore]}
+                        inline
+                      />
+                      {/* <DayPicker
                         mode="single"
-                        disabledDays={{ before: new Date() }}
+                        disabledDays={(day) => day > new Date()}
                         selected={selectedDate}
                         onSelect={setSelectedDate}
                         styles={{
@@ -139,7 +181,7 @@ export default function Home() {
                             borderRadius: "10px",
                           },
                         }}
-                      />
+                      /> */}
                     </Box>
                     <Box sx={{ mx: 4 }}>
                       <Typography
@@ -156,40 +198,43 @@ export default function Home() {
                       </Typography>
                       <Box>
                         {jsonData.schedule.map((day, index) => (
-                          <Grid container spacing={2} key={index}>
-                            {" "}
-                            {getTimeSlots(day.start, day.end, duration).map(
-                              (slot, i) => (
-                                <>
-                                  <Grid container spacing={2} key={i}>
-                                    <Grid xs={6} md={8}>
-                                      <button
-                                        key={i}
-                                        onClick={() => handleSlotClick(slot)}
-                                        className={
-                                          selectedSlot === slot
-                                            ? "selected"
-                                            : ""
-                                        }
-                                        style={{
-                                          width: "105px",
-                                          height: "40px",
+                          <>
+                            <h3>{`Day ${index + 1}`}</h3>{" "}
+                            <Grid container spacing={2} key={index}>
+                              {getTimeSlots(day.start, day.end, duration).map(
+                                (slot, i) => (
+                                  <>
+                                    <Grid container spacing={2} key={i}>
+                                      <Grid xs={6} md={8}>
+                                        <button
+                                          key={i}
+                                          onClick={() => handleSlotClick(slot)}
+                                          className={
+                                            selectedSlot === slot
+                                              ? "selected"
+                                              : ""
+                                          }
+                                          style={{
+                                            width: "105px",
+                                            height: "40px",
 
-                                          background: " #FFFFFF",
-                                          border:
-                                            "1px solid rgba(0, 0, 0, 0.2)",
-                                          borderRadius: " 32px",
-                                          color: "black",
-                                        }}
-                                      >
-                                        {slot.start}
-                                      </button>
+                                            background: " #FFFFFF",
+                                            border:
+                                              "1px solid rgba(0, 0, 0, 0.2)",
+                                            borderRadius: " 32px",
+                                            color: "black",
+                                            cursor: "pointer",
+                                          }}
+                                        >
+                                          {slot.start}
+                                        </button>
+                                      </Grid>
                                     </Grid>
-                                  </Grid>
-                                </>
-                              )
-                            )}
-                          </Grid>
+                                  </>
+                                )
+                              )}
+                            </Grid>
+                          </>
                         ))}
                       </Box>
                     </Box>

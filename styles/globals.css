@@ -28,3 +28,9 @@ a {
 
   }
 }
+
+.react-datepicker__day-names {
+  margin-bottom: -8px;
+  background: #F25A2C;
+  color: white
+}
