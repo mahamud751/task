@@ -12,9 +12,7 @@ Open [https://task-six-xi.vercel.app/](https://task-six-xi.vercel.app/) with you
 
 ## Using Packages
 
-Material Ui
-Date-fns
-React Day Picker
+Material Ui, Date-fns, React Day Picker.
 
 You can check out [the Next.js GitHub repository](https://github.com/mahamud751/task) - your feedback and contributions are welcome!
 
