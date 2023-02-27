@@ -31,8 +31,6 @@ const Time = () => {
         }}
         color="text.secondary"
         gutterBottom
-
-        /* identical to box height, or 140% */
       >
         Time Now: {formattedTime}
       </Typography>

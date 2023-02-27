@@ -7,7 +7,6 @@ import styles from "../styles/Home.module.css";
 import { Container } from "@mui/system";
 import { useState } from "react";
 import { FormControl, Modal, OutlinedInput } from "@mui/material";
-
 import Grid from "@mui/material/Unstable_Grid2";
 import { format, addMinutes } from "date-fns";
 import { DayPicker } from "react-day-picker";
@@ -94,8 +93,6 @@ export default function Home() {
                   fontWeight: "400",
                   fontSize: "25px",
                   lineHeight: " 42px",
-                  /* or 168% */
-
                   color: "#000000",
                 }}
               >
@@ -122,8 +119,6 @@ export default function Home() {
                       fontWeight: "400",
                       fontSize: "25px",
                       lineHeight: " 42px",
-                      /* or 168% */
-
                       color: "#000000",
                     }}
                   >
@@ -154,8 +149,6 @@ export default function Home() {
                           fontWeight: "400",
                           fontSize: "25px",
                           lineHeight: " 42px",
-                          /* or 168% */
-
                           color: "#000000",
                         }}
                       >
@@ -240,9 +233,6 @@ export default function Home() {
                   </Button>
                 </>
               )}
-              <div>
-                {/* <Button onClick={handleOpen}>Open modal</Button> */}
-              </div>
               {open && (
                 <Modal
                   open={open}
@@ -267,8 +257,6 @@ export default function Home() {
                         fontWeight: "400",
                         fontSize: "40px",
                         lineHeight: "48px",
-                        /* identical to box height, or 120% */
-
                         color: "#000000",
                       }}
                     >
