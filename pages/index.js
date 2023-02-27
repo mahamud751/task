@@ -62,7 +62,7 @@ export default function Home() {
 
   const slots = [];
   const slotDuration = duration;
-  const slotInterval = 2;
+  const slotInterval = 40;
 
   jsonData.schedule.forEach((slot) => {
     const start = new Date(
