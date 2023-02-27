@@ -5,20 +5,15 @@ import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import styles from "../styles/Home.module.css";
 import { Container } from "@mui/system";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { FormControl, Modal, OutlinedInput } from "@mui/material";
 
 import Grid from "@mui/material/Unstable_Grid2";
-import {
-  format,
-  addMinutes,
-  startOfDay,
-  endOfDay,
-  differenceInMinutes,
-} from "date-fns";
+import { format, addMinutes } from "date-fns";
 import { DayPicker } from "react-day-picker";
 import Image from "next/image";
 import Time from "../components/home/time";
+
 const style = {
   position: "absolute",
   top: "50%",
@@ -33,11 +28,7 @@ const style = {
   borderRadius: 5,
 };
 const jsonData = {
-  schedule: [
-    { start: "08:00", end: "12:00" },
-    { start: "13:00", end: "17:00" },
-    { start: "18:00", end: "22:00" },
-  ],
+  schedule: [{ start: "06:00", end: "14:00" }],
 };
 
 export default function Home() {
@@ -56,36 +47,9 @@ export default function Home() {
   if (selectedDate) {
     footer = <p>Date:{format(selectedDate, "PP")},</p>;
   }
-  const [selectedDay, setSelectedDay] = useState(new Date());
+
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [duration, setDuration] = useState(0);
-
-  const slots = [];
-  const slotDuration = duration;
-  const slotInterval = 40;
-
-  jsonData.schedule.forEach((slot) => {
-    const start = new Date(
-      `${format(selectedDay, "yyyy-MM-dd")}T${slot.start}:00`
-    );
-    const end = new Date(`${format(selectedDay, "yyyy-MM-dd")}T${slot.end}:00`);
-
-    let current = startOfDay(start);
-    const endOfDayDate = endOfDay(start);
-    while (current <= endOfDayDate) {
-      const slotEnd = addMinutes(current, slotDuration);
-      if (
-        slotEnd <= end &&
-        differenceInMinutes(slotEnd, current) >= slotInterval
-      ) {
-        slots.push({
-          start: current,
-          end: slotEnd,
-        });
-      }
-      current = addMinutes(current, slotInterval);
-    }
-  });
 
   const handleSlotClick = (slot) => {
     setSelectedSlot(slot);
@@ -99,6 +63,18 @@ export default function Home() {
     setOpen(true);
   };
 
+  const getTimeSlots = (start, end, duration) => {
+    const timeSlots = [];
+    let currentTime = new Date(`2000-01-01T${start}:00.000Z`);
+    while (currentTime < new Date(`2000-01-01T${end}:00.000Z`)) {
+      timeSlots.push({
+        start: format(currentTime, "HH:mm"),
+        end: format(addMinutes(currentTime, duration), "HH:mm"),
+      });
+      currentTime = addMinutes(currentTime, duration);
+    }
+    return timeSlots;
+  };
   return (
     <div className={styles.container}>
       <Container>
@@ -160,6 +136,14 @@ export default function Home() {
                         disabledDays={{ before: new Date() }}
                         selected={selectedDate}
                         onSelect={setSelectedDate}
+                        styles={{
+                          caption: { textAlign: "center" },
+                          head: {
+                            background: "#F25A2C",
+                            color: "white",
+                            borderRadius: "10px",
+                          },
+                        }}
                       />
                     </Box>
                     <Box sx={{ mx: 4 }}>
@@ -177,35 +161,44 @@ export default function Home() {
                       >
                         Select Time Slot
                       </Typography>
-                      <Grid
-                        container
-                        spacing={{ xs: 2, md: 3 }}
-                        columns={{ xs: 4, sm: 8, md: 12 }}
-                      >
-                        {slots.map((slot, index) => (
-                          <Grid xs={2} sm={4} md={4} key={index}>
+                      <Box>
+                        {jsonData.schedule.map((day, index) => (
+                          <Grid container spacing={2} key={index}>
                             {" "}
-                            <button
-                              key={slot.start.toISOString()}
-                              onClick={() => handleSlotClick(slot)}
-                              className={
-                                selectedSlot === slot ? "selected" : ""
-                              }
-                              style={{
-                                width: "105px",
-                                height: "40px",
+                            {getTimeSlots(day.start, day.end, duration).map(
+                              (slot, i) => (
+                                <>
+                                  <Grid container spacing={2} key={i}>
+                                    <Grid xs={6} md={8}>
+                                      <button
+                                        key={i}
+                                        onClick={() => handleSlotClick(slot)}
+                                        className={
+                                          selectedSlot === slot
+                                            ? "selected"
+                                            : ""
+                                        }
+                                        style={{
+                                          width: "105px",
+                                          height: "40px",
 
-                                background: " #FFFFFF",
-                                border: "1px solid rgba(0, 0, 0, 0.2)",
-                                borderRadius: " 32px",
-                                color: "black",
-                              }}
-                            >
-                              {format(slot.start, "h:mm a")}
-                            </button>
+                                          background: " #FFFFFF",
+                                          border:
+                                            "1px solid rgba(0, 0, 0, 0.2)",
+                                          borderRadius: " 32px",
+                                          color: "black",
+                                        }}
+                                      >
+                                        {slot.start}
+                                      </button>
+                                    </Grid>
+                                  </Grid>
+                                </>
+                              )
+                            )}
                           </Grid>
                         ))}
-                      </Grid>
+                      </Box>
                     </Box>
                   </Box>
                   <Box>
@@ -237,6 +230,7 @@ export default function Home() {
                       width: "111px",
                       textTransform: "initial",
                       float: "right",
+                      padding: 2,
                       mb: 10,
                     }}
                     onClick={handleBookNowClick}
@@ -303,7 +297,7 @@ export default function Home() {
                           mt: 1.7,
                         }}
                       >
-                        Time:{format(selectedSlot.start, "h:mm a")}
+                        Time:{selectedSlot.start}
                       </Typography>
                     </Box>
                   </Box>
